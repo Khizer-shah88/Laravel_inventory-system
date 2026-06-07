@@ -127,6 +127,17 @@
 
                 return route('items.image', ['path' => ltrim($path, '/')]);
             };
+
+            $shareAllParams = array_filter([
+                'search_column' => $searchColumn ?? '',
+                'search_value' => $searchValue ?? '',
+            ], function ($value) {
+                return $value !== null && $value !== '';
+            });
+            $shareAllLabel = ($searchColumn ?? '') !== '' && ($searchValue ?? '') !== ''
+                ? 'Share Filtered'
+                : 'Share All';
+            $shareAllUrl = route('items.shareAll', $shareAllParams);
         @endphp
 
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
@@ -165,6 +176,15 @@
                 <div class="d-flex flex-column">
                     <label class="invisible">Clear</label>
                     <a href="{{ route('items.index') }}" class="btn btn-clear" id="inventoryFilterClear">Clear</a>
+                </div>
+                <div class="d-flex flex-column">
+                    <label class="invisible">Share</label>
+                    <a href="{{ $shareAllUrl }}"
+                       class="btn btn-outline-primary"
+                       style="min-height:42px; border-radius:10px; font-weight:700; padding:0 18px;"
+                       target="_blank" rel="noopener">
+                        <i class="fas fa-share-alt"></i> {{ $shareAllLabel }}
+                    </a>
                 </div>
             </form>
         </div>

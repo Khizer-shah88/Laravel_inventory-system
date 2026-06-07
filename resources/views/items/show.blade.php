@@ -139,7 +139,7 @@
                                 @php
                                     $imgUrl = $imagePaths[$loop->index] ?? $placeholderImage;
                                 @endphp
-                                <img src="{{ $imgUrl }}" class="card-img-top" alt="Item image {{ $image->id }}" style="height: 140px; object-fit: cover;" onerror="this.src='{{ $placeholderImage }}'">
+                                <img src="{{ $imgUrl }}" class="card-img-top" alt="Item image {{ $image->id }}" style="height: 240px; object-fit: contain; background: #f8f9fa;" onerror="this.src='{{ $placeholderImage }}'">
                                 <div class="card-body">
                                     <form action="{{ route('items.images.update', $image->id) }}" method="POST" enctype="multipart/form-data" class="mb-2">
                                         @csrf
@@ -148,6 +148,12 @@
                                         <input type="file" class="form-control form-control-sm mb-2" name="image" accept="image/*" required>
                                         <button type="submit" class="btn btn-sm btn-outline-primary w-100">Change Image</button>
                                     </form>
+                                    <a href="{{ route('items.share', ['id' => $item->ItemCode, 'image' => $image->id]) }}"
+                                       class="btn btn-sm btn-outline-success w-100 mb-2"
+                                       target="_blank"
+                                       rel="noopener">
+                                        Share This Image
+                                    </a>
                                     <form action="{{ route('items.images.destroy', $image->id) }}" method="POST" onsubmit="return confirm('Delete this image?');">
                                         @csrf
                                         @method('DELETE')

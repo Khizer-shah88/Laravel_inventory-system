@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Item Share - #{{ $item->ItemCode }}</title>
+    <title>Item Shares - #{{ $item->ItemCode }}</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
@@ -115,18 +115,35 @@
         }
 
         .image-wrap {
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 12px;
-            background: #f8fafc;
+            position: relative;
+            border-radius: 16px;
+            padding: 14px;
+            background: #ffffff;
+            border: 6px solid #1a3a6e;
             text-align: center;
             margin-bottom: 16px;
+            box-shadow: 0 12px 26px rgba(13, 31, 60, 0.18);
+        }
+
+        .image-wrap::before {
+            content: '';
+            position: absolute;
+            inset: 8px;
+            border-radius: 10px;
+            border: 2px solid #f59e0b;
+            box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.1);
         }
 
         .image-wrap img {
+            position: relative;
+            z-index: 1;
             width: 100%;
             max-height: 300px;
             object-fit: contain;
+            border-radius: 8px;
+            display: block;
+            margin: 0 auto;
+            background: #f8fafc;
         }
 
         /* ── META TABLE ── */
@@ -203,6 +220,10 @@
             <span class="phone-badge">📞</span>
             Ali: 03023057948
         </div>
+        <div class="contact-item">
+            <span class="phone-badge">📍</span>
+            Location: KN SHAH
+        </div>
     </div>
 
     {{-- PRODUCT SECTION --}}
@@ -215,7 +236,7 @@
 
         <table class="meta">
             <tr>
-                <th>Item Code</th>
+                <th>Item Code </th>
                 <td>{{ $item->ItemCode }}</td>
             </tr>
             <tr>

@@ -220,6 +220,12 @@ Route::get('/items/{code}/details/{customerType}', function ($code, $customerTyp
 
 
 Route::prefix('items')->group(function () {
+    Route::get('/share-all', [ItemsController::class, 'shareAll'])
+        ->name('items.shareAll');
+    Route::get('/share-all-pdf', [ItemsController::class, 'shareAllPdf'])
+        ->name('items.shareAllPdf');
+    Route::get('/share-all-whatsapp', [ItemsController::class, 'shareAllWhatsapp'])
+        ->name('items.shareAllWhatsapp');
     Route::get('/image/{path}', function ($path) {
         $imagePath = rawurldecode($path);
         $cleanPath = ltrim(trim($imagePath), '/');
@@ -246,6 +252,16 @@ Route::prefix('items')->group(function () {
             ->where('ItemCode', $id)
             ->first();
 
+        $selectedImageId = request()->query('image');
+
+        $selectedImage = null;
+        if ($selectedImageId) {
+            $selectedImage = DB::table('item_images')
+                ->where('id', $selectedImageId)
+                ->where('ItemCode', $id)
+                ->first();
+        }
+
         $latestImage = DB::table('item_images')
             ->where('ItemCode', $id)
             ->orderByDesc('id')
@@ -259,27 +275,16 @@ Route::prefix('items')->group(function () {
             '<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800"><rect width="1200" height="800" fill="#f2f4f7"/><rect x="60" y="60" width="1080" height="680" rx="24" fill="#ffffff" stroke="#d0d7de" stroke-dasharray="18 14"/><text x="600" y="380" text-anchor="middle" font-family="Arial, sans-serif" font-size="42" fill="#98a2b3">No image available</text></svg>'
         );
 
-        $imagePath = $latestImage?->image_path;
+        $imagePath = $selectedImage?->image_path ?? $latestImage?->image_path;
         $shareImage = $imagePath
             ? route('items.image', ['path' => ltrim($imagePath, '/')])
             : $placeholderImage;
 
         return view('items.share', compact('item', 'shareImage', 'placeholderImage'));
     })->name('items.share');
-    Route::get('/{id}/share-pdf', function ($id) {
-        $item = DB::table('tblItems')
-            ->where('ItemCode', $id)
-            ->first();
-
-        if (!$item) {
-            abort(404, 'Item not found');
-        }
-
-        $printUrl = route('items.share', $item->ItemCode);
-        $message = "Item: {$item->ItemName}\nView/Print: {$printUrl}\nUse browser Print > Save as PDF.";
-
-        return redirect()->away('https://wa.me/?text=' . urlencode($message));
-    })->name('items.sharePdf');
+    Route::get('/{id}/share-pdf', [ItemsController::class, 'sharePdf'])
+        ->name('items.sharePdf');
+       
 });
 
 

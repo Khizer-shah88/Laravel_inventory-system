@@ -148,6 +148,148 @@ class ItemsController extends Controller
         return $placeholderImage;
     }
 
+    private function resolveShareImageUrl(?string $imagePath, string $placeholderImage): string
+    {
+        $path = trim((string) $imagePath);
+
+        if ($path === '') {
+            return $placeholderImage;
+        }
+
+        if (Str::startsWith($path, ['http://', 'https://'])) {
+            return $path;
+        }
+
+        return route('items.image', ['path' => ltrim($path, '/')]);
+    }
+
+    private function applyShareFilter($query, ?string $searchColumn, ?string $searchValue)
+    {
+        $searchColumn = trim((string) $searchColumn);
+        $searchValue = trim((string) $searchValue);
+
+        if ($searchColumn === '' || $searchValue === '') {
+            return $query;
+        }
+
+        $columnMap = [
+            'barcode'     => 'Barcode',
+            'itemName'    => 'ItemName',
+            'companyName' => 'CompanyName',
+            'category'    => 'Category',
+            'ppprice'     => 'PPurprice',
+            'puprice'     => 'UPurprice',
+            'usprice'     => 'USalprice',
+            'psprice'     => 'RPprice',
+            'wuprice'     => 'WUprice',
+            'wpprice'     => 'WPprice',
+            'duprice'     => 'DUprice',
+            'dpprice'     => 'DPprice',
+        ];
+
+        $numericColumns = ['ppprice', 'puprice', 'usprice', 'psprice', 'wuprice', 'wpprice', 'duprice', 'dpprice'];
+
+        if (!isset($columnMap[$searchColumn])) {
+            return $query;
+        }
+
+        if ($searchColumn === 'image') {
+            return $query;
+        }
+
+        $dbField = $columnMap[$searchColumn];
+
+        if (in_array($searchColumn, $numericColumns, true)) {
+            if (preg_match('/^(\d+(?:\.\d+)?)\s*-\s*(\d+(?:\.\d+)?)$/', $searchValue, $m)) {
+                return $query->whereBetween($dbField, [(float) $m[1], (float) $m[2]]);
+            }
+
+            if (preg_match('/^(>=|<=|>|<|=)\s*(\d+(?:\.\d+)?)$/', $searchValue, $m)) {
+                return $query->where($dbField, $m[1], (float) $m[2]);
+            }
+
+            if (is_numeric($searchValue)) {
+                return $query->where($dbField, (float) $searchValue);
+            }
+
+            return $query;
+        }
+
+        return $query->where($dbField, 'LIKE', '%' . $searchValue . '%');
+    }
+
+    private function shareFilterLabel(?string $searchColumn, ?string $searchValue): string
+    {
+        $searchColumn = trim((string) $searchColumn);
+        $searchValue = trim((string) $searchValue);
+
+        if ($searchColumn === '' || $searchValue === '') {
+            return 'All items';
+        }
+
+        $labels = [
+            'barcode' => 'Barcode',
+            'itemName' => 'Item Name',
+            'companyName' => 'Company Name',
+            'category' => 'Category',
+            'ppprice' => 'PPprice',
+            'puprice' => 'PUprice',
+            'usprice' => 'USprice',
+            'psprice' => 'PSprice',
+            'wuprice' => 'WUprice',
+            'wpprice' => 'WPprice',
+            'duprice' => 'DUprice',
+            'dpprice' => 'DPprice',
+        ];
+
+        $label = $labels[$searchColumn] ?? ucfirst($searchColumn);
+
+        return $label . ': ' . $searchValue;
+    }
+
+    private function shareQueryParams(?string $searchColumn, ?string $searchValue): array
+    {
+        $params = [];
+
+        $searchColumn = trim((string) $searchColumn);
+        $searchValue = trim((string) $searchValue);
+
+        if ($searchColumn !== '') {
+            $params['search_column'] = $searchColumn;
+        }
+
+        if ($searchValue !== '') {
+            $params['search_value'] = $searchValue;
+        }
+
+        return $params;
+    }
+
+    private function fetchShareAllItems(?string $searchColumn, ?string $searchValue)
+    {
+        $query = DB::table('tblItems')
+            ->select(
+                'tblItems.*',
+                DB::raw('(select image_path from item_images where item_images.ItemCode = tblItems.ItemCode order by id desc limit 1) as thumbnail_path')
+            );
+
+        $query = $this->applyShareFilter($query, $searchColumn, $searchValue);
+
+        return $query->orderBy('ItemName')->get();
+    }
+
+    private function appendShareImages($items, string $placeholderImage, bool $inline = false): void
+    {
+        foreach ($items as $item) {
+            $imagePath = $item->thumbnail_path ?? '';
+            $item->imageUrl = $this->resolveShareImageUrl($imagePath, $placeholderImage);
+
+            if ($inline) {
+                $item->inlineImage = $this->buildInlineImageData($imagePath, $placeholderImage);
+            }
+        }
+    }
+
     public function image($path)
     {
         $imagePath = rawurldecode($path);
@@ -453,6 +595,65 @@ public function getItems()
         $whatsAppUrl = 'https://wa.me/?text=' . urlencode($message);
 
         return redirect()->away($whatsAppUrl);
+    }
+
+    public function shareAll(Request $request)
+    {
+        $searchColumn = $request->input('search_column', '');
+        $searchValue = $request->input('search_value', '');
+
+        $items = $this->fetchShareAllItems($searchColumn, $searchValue);
+        $placeholderImage = $this->sharePlaceholderImage();
+        $this->appendShareImages($items, $placeholderImage);
+
+        $filterLabel = $this->shareFilterLabel($searchColumn, $searchValue);
+        $shareParams = $this->shareQueryParams($searchColumn, $searchValue);
+
+        $sharePageUrl = route('items.shareAll', $shareParams);
+        $sharePdfUrl = route('items.shareAllPdf', $shareParams);
+        $shareWhatsappUrl = route('items.shareAllWhatsapp', $shareParams);
+
+        return view('items.share-all', [
+            'items' => $items,
+            'placeholderImage' => $placeholderImage,
+            'filterLabel' => $filterLabel,
+            'sharePageUrl' => $sharePageUrl,
+            'sharePdfUrl' => $sharePdfUrl,
+            'shareWhatsappUrl' => $shareWhatsappUrl,
+        ]);
+    }
+
+    public function shareAllWhatsapp(Request $request)
+    {
+        $searchColumn = $request->input('search_column', '');
+        $searchValue = $request->input('search_value', '');
+
+        $filterLabel = $this->shareFilterLabel($searchColumn, $searchValue);
+        $sharePageUrl = route('items.shareAll', $this->shareQueryParams($searchColumn, $searchValue));
+
+        $message = "Items list ({$filterLabel})\n{$sharePageUrl}";
+
+        return redirect()->away('https://wa.me/?text=' . urlencode($message));
+    }
+
+    public function shareAllPdf(Request $request)
+    {
+        $searchColumn = $request->input('search_column', '');
+        $searchValue = $request->input('search_value', '');
+
+        $items = $this->fetchShareAllItems($searchColumn, $searchValue);
+        $placeholderImage = $this->sharePlaceholderImage();
+        $this->appendShareImages($items, $placeholderImage, true);
+
+        $filterLabel = $this->shareFilterLabel($searchColumn, $searchValue);
+        $fileName = 'items-' . now()->format('YmdHis') . '.pdf';
+
+        $pdf = Pdf::loadView('items.share-all-pdf', [
+            'items' => $items,
+            'filterLabel' => $filterLabel,
+        ]);
+
+        return $pdf->download($fileName);
     }
 
     public function edit($id)

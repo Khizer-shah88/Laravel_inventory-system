@@ -10,7 +10,7 @@
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-            background: #0a1628;
+            background: radial-gradient(circle at top, #0f2342 0%, #0a1628 48%, #081221 100%);
             font-family: 'Outfit', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             min-height: 100vh;
             display: flex;
@@ -27,6 +27,8 @@
             border-radius: 20px;
             overflow: hidden;
             box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+            background: #0b1b33;
+            border: 1px solid rgba(148, 163, 184, 0.2);
         }
 
         /* ── TOP BANNER HEADER ──────────────────────────────── */
@@ -138,22 +140,110 @@
 
         /* ── PRODUCT IMAGE ──────────────────────────────────── */
         .product-image-wrap {
-            background: #f2f6fb;
-            padding: 24px;
+            background: linear-gradient(135deg, #eaf0f8 0%, #f8fbff 60%, #ffffff 100%);
+            padding: 28px;
             text-align: center;
+            position: relative;
         }
 
-        .product-image-wrap img {
+        .image-frame {
+            position: relative;
+            padding: 18px;
+            border-radius: 22px;
+            background: linear-gradient(135deg, #f9e08a 0%, #f6c453 28%, #e9a31d 55%, #ffd57a 78%, #b87900 100%);
+            border: 1px solid rgba(120, 74, 0, 0.35);
+            box-shadow: 0 26px 50px rgba(13, 31, 60, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+        }
+
+        .image-frame::before {
+            content: '';
+            position: absolute;
+            inset: 10px;
+            border-radius: 18px;
+            border: 2px solid rgba(255, 255, 255, 0.35);
+            pointer-events: none;
+        }
+
+        .image-frame::after {
+            content: '';
+            position: absolute;
+            inset: 6px;
+            border-radius: 20px;
+            background:
+                linear-gradient(#fff1c2, #fff1c2) 12px 12px/44px 2px no-repeat,
+                linear-gradient(#fff1c2, #fff1c2) 12px 12px/2px 44px no-repeat,
+                linear-gradient(#d08a10, #d08a10) calc(100% - 12px) 12px/44px 2px no-repeat,
+                linear-gradient(#d08a10, #d08a10) calc(100% - 12px) 12px/2px 44px no-repeat,
+                linear-gradient(#d08a10, #d08a10) 12px calc(100% - 12px)/44px 2px no-repeat,
+                linear-gradient(#d08a10, #d08a10) 12px calc(100% - 12px)/2px 44px no-repeat,
+                linear-gradient(#fff1c2, #fff1c2) calc(100% - 12px) calc(100% - 12px)/44px 2px no-repeat,
+                linear-gradient(#fff1c2, #fff1c2) calc(100% - 12px) calc(100% - 12px)/2px 44px no-repeat;
+            opacity: 0.85;
+            pointer-events: none;
+        }
+
+        .frame-ornament {
+            position: absolute;
+            z-index: 2;
+            background: linear-gradient(180deg, #fff1c2 0%, #f6c453 45%, #e09a19 70%, #ffd57a 100%);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65), inset 0 -1px 0 rgba(120, 74, 0, 0.35);
+        }
+
+        .frame-ornament.left,
+        .frame-ornament.right {
+            top: 18%;
+            width: 36px;
+            height: 64%;
+            border-radius: 16px;
+            background-image:
+                linear-gradient(180deg, #fff1c2 0%, #f6c453 45%, #e09a19 70%, #ffd57a 100%),
+                repeating-linear-gradient(180deg, rgba(120, 74, 0, 0.18) 0 4px, transparent 4px 10px);
+            background-blend-mode: multiply;
+        }
+
+        .frame-ornament.left {
+            left: 8px;
+        }
+
+        .frame-ornament.right {
+            right: 8px;
+        }
+
+        .frame-ornament.bottom {
+            left: 20%;
+            right: 20%;
+            bottom: 6px;
+            height: 26px;
+            border-radius: 0 0 18px 18px;
+            background-image:
+                linear-gradient(180deg, #fff1c2 0%, #f6c453 60%, #e09a19 100%),
+                linear-gradient(90deg, rgba(120, 74, 0, 0.25), transparent 35%, transparent 65%, rgba(120, 74, 0, 0.25));
+            background-blend-mode: multiply;
+        }
+
+        .image-frame-inner {
+            position: relative;
+            background: #ffffff;
+            padding: 16px;
+            border-radius: 14px;
+            border: 1px solid rgba(120, 74, 0, 0.2);
+            box-shadow: inset 0 0 0 1px rgba(255, 233, 173, 0.55);
+        }
+
+        .image-frame-inner img {
             width: 100%;
             max-height: 360px;
             object-fit: contain;
             border-radius: 10px;
+            display: block;
+            background: #f8fafc;
         }
 
         /* ── PRODUCT INFO ───────────────────────────────────── */
         .product-info {
             background: #ffffff;
-            padding: 20px 24px;
+            padding: 22px 24px 24px;
+            border-top: 1px solid #e2e8f0;
         }
 
         .product-name {
@@ -194,7 +284,7 @@
 
         /* ── ACTION BAR ─────────────────────────────────────── */
         .action-bar {
-            background: #f8fafc;
+            background: #f1f5f9;
             border-top: 1px solid #e2e8f0;
             padding: 14px 20px;
             display: flex;
@@ -219,6 +309,23 @@
             transition: opacity 0.2s;
         }
         .btn-whatsapp:hover { opacity: 0.88; color: #fff; }
+
+        .btn-category {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            padding: 10px 18px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: opacity 0.2s;
+        }
+        .btn-category:hover { opacity: 0.9; color: #fff; }
 
         .btn-pdf {
             background: #fff;
@@ -254,6 +361,7 @@
         @media (max-width: 480px) {
             .banner-title { font-size: 1.12rem; }
             .contact-strip { gap: 10px; }
+            .product-image-wrap { padding: 20px; }
         }
     </style>
 </head>
@@ -267,7 +375,7 @@
             <div class="banner-icon">⚡</div>
             <div class="banner-title-block">
                 <div class="banner-title">ADNAN <span>ELECTRONIC</span> STORE</div>
-                <div class="banner-tagline">Modern Electronics & Electrical Supplies</div>
+                <div class="banner-tagline">Modern Electronic & Electrical Supplies</div>
             </div>
         </div>
     </div>
@@ -283,6 +391,10 @@
             <div class="phone-icon">📞</div>
             <span>Ali: 03023057948</span>
         </div>
+         <div class="contact-item">
+            <span class="phone-badge">📍</span>
+            Location: KN SHAH
+        </div>
     </div>
 
     {{-- ── PRODUCT IMAGE ── --}}
@@ -290,7 +402,14 @@
         @if(session('error'))
             <div class="alert alert-danger mb-3">{{ session('error') }}</div>
         @endif
-        <img src="{{ $shareImage }}" alt="{{ $item->ItemName }}" onerror="this.src='{{ $placeholderImage }}'">
+        <div class="image-frame">
+            <span class="frame-ornament left" aria-hidden="true"></span>
+            <span class="frame-ornament right" aria-hidden="true"></span>
+            <span class="frame-ornament bottom" aria-hidden="true"></span>
+            <div class="image-frame-inner">
+                <img src="{{ $shareImage }}" alt="{{ $item->ItemName }}" onerror="this.src='{{ $placeholderImage }}'">
+            </div>
+        </div>
     </div>
 
     {{-- ── PRODUCT DETAILS ── --}}
@@ -310,6 +429,13 @@
 
     {{-- ── ACTION BUTTONS ── --}}
     <div class="action-bar">
+        @if(!empty($item->Category))
+            <a href="{{ route('items.shareAll', ['search_column' => 'category', 'search_value' => $item->Category]) }}"
+               class="btn-category"
+               target="_blank" rel="noopener">
+                🧾 Share Category
+            </a>
+        @endif
         <a href="{{ route('items.sharePdf', $item->ItemCode) }}" class="btn-whatsapp" target="_blank" rel="noopener">
             📲 Share on WhatsApp
         </a>
